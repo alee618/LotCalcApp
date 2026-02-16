@@ -271,11 +271,7 @@ function loadJournal() {
   <option value="LOSS" ${trade.result === "LOSS" ? "selected" : ""}>🥀 LOSS</option>
   <option value="BE" ${trade.result === "BE" ? "selected" : ""}>🙎🏻 BE</option>
 </select>
-          <option value="OPEN" ${trade.result === "OPEN" ? "selected" : ""}>OPEN</option>
-          <option value="WIN" ${trade.result === "WIN" ? "selected" : ""}>WIN</option>
-          <option value="LOSS" ${trade.result === "LOSS" ? "selected" : ""}>LOSS</option>
-          <option value="BE" ${trade.result === "BE" ? "selected" : ""}>BE</option>
-        </select>
+          
       </td>
       <td>
         <input type="number" value="${trade.pnl ?? ""}"
