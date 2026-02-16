@@ -309,10 +309,14 @@ function loadJournal() {
           
       </td>
       <td>
-        <input type="number"
+       <input type="number"
   value="${trade.pnl ?? ""}"
-  onchange="updateTrade(${index}, 'pnl', this.value)"
-  class="pnl-input ${trade.pnl > 0 ? 'pnl-positive' : trade.pnl < 0 ? 'pnl-negative' : ''}">
+  onchange="updateTrade(${index}, 'pnl', this.value); loadJournal();"
+  style="
+    width:80px;
+    font-weight:bold;
+    color:${trade.pnl > 0 ? '#22c55e' : trade.pnl < 0 ? '#ef4444' : '#e5e7eb'};
+  ">
       </td>
       <td>
         <textarea
