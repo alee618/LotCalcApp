@@ -202,8 +202,8 @@ function showJournal() {
 }
 
 function calculate() {
-  const entry = +entryInput.value || +entry.value;
-  const stop = +stopInput?.value || +stop.value;
+  const entry = parseFloat(document.getElementById("entry").value);
+const stop = parseFloat(document.getElementById("stop").value);
   const vpp = +asset.value;
 
   if (!entry || !stop) return result.innerText="Enter entry & stop";
