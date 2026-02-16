@@ -266,6 +266,11 @@ function loadJournal() {
       <td>${trade.lot.toFixed(2)}</td>
       <td>
         <select onchange="updateTrade(${index}, 'result', this.value)">
+  <option value="OPEN" ${trade.result === "OPEN" ? "selected" : ""}>⏳ OPEN</option>
+  <option value="WIN" ${trade.result === "WIN" ? "selected" : ""}>🥂 WIN</option>
+  <option value="LOSS" ${trade.result === "LOSS" ? "selected" : ""}>🥀 LOSS</option>
+  <option value="BE" ${trade.result === "BE" ? "selected" : ""}>🙎🏻 BE</option>
+</select>
           <option value="OPEN" ${trade.result === "OPEN" ? "selected" : ""}>OPEN</option>
           <option value="WIN" ${trade.result === "WIN" ? "selected" : ""}>WIN</option>
           <option value="LOSS" ${trade.result === "LOSS" ? "selected" : ""}>LOSS</option>
