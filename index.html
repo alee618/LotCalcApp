@@ -68,8 +68,11 @@
   </style>
 </head>
 <body>
-
-<div class="box">
+<div style="text-align:center; margin-bottom:15px;">
+  <button onclick="showCalculator()">Calculator</button>
+  <button onclick="showJournal()">Journal</button>
+</div>
+<div class="box" id="calculatorPage">
   <h2>Lot Size Calculator</h2>
 
   <label>Asset</label>
@@ -109,14 +112,38 @@
 
   <div class="result" id="result"></div>
 </div>
+<div class="box" id="journalPage" style="display:none;">
+  <h2>Trade Journal</h2>
 
+  <table width="100%" border="1" cellpadding="6" style="border-collapse:collapse; font-size:14px;">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Asset</th>
+        <th>Risk</th>
+        <th>Lot</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody id="journalBody"></tbody>
+  </table>
+</div>
 <script>
   function toggleRiskMode() {
     const usePercent = document.getElementById("riskMode").checked;
     document.getElementById("manualRisk").style.display = usePercent ? "none" : "block";
     document.getElementById("percentRisk").style.display = usePercent ? "block" : "none";
   }
+function showCalculator() {
+  document.getElementById("calculatorPage").style.display = "block";
+  document.getElementById("journalPage").style.display = "none";
+}
 
+function showJournal() {
+  document.getElementById("calculatorPage").style.display = "none";
+  document.getElementById("journalPage").style.display = "block";
+  loadJournal();
+}
   function calculate() {
     const entry = parseFloat(document.getElementById("entry").value);
     const stop = parseFloat(document.getElementById("stop").value);
@@ -127,7 +154,27 @@
       result.innerText = "Enter entry and stop prices";
       return;
     }
+function saveTrade(entry, stop, risk, lot) {
+  const trades = JSON.parse(localStorage.getItem("trades") || "[]");
 
+  const now = new Date();
+
+  trades.push({
+    id: Date.now(),
+    date: now.toISOString().slice(0, 10),
+    time: now.toTimeString().slice(0, 5),
+    asset: document.getElementById("asset").selectedOptions[0].text,
+    entry: entry,
+    stop: stop,
+    risk: risk,
+    lot: lot,
+    result: "OPEN",
+    pnl: null,
+    notes: ""
+  });
+
+  localStorage.setItem("trades", JSON.stringify(trades));
+}
     const stopDistance = Math.abs(entry - stop);
     if (stopDistance === 0) {
       result.innerText = "Stop distance cannot be zero";
@@ -156,7 +203,28 @@
 
     const lotSize = risk / (stopDistance * valuePerPoint);
     result.innerText = "Lot Size: " + lotSize.toFixed(2);
+saveTrade(entry, stop, risk, lotSize);
   }
+function loadJournal() {
+  const trades = JSON.parse(localStorage.getItem("trades") || "[]");
+  const body = document.getElementById("journalBody");
+
+  body.innerHTML = "";
+
+  trades.forEach(trade => {
+    const row = document.createElement("tr");
+
+    row.innerHTML = `
+      <td>${trade.date}</td>
+      <td>${trade.asset}</td>
+      <td>$${trade.risk}</td>
+      <td>${trade.lot.toFixed(2)}</td>
+      <td>${trade.result}</td>
+    `;
+
+    body.appendChild(row);
+  });
+}
 </script>
 
 </body>
