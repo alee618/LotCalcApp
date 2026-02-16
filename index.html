@@ -311,11 +311,26 @@ function loadMonthOptions(){
 function changeMonth(m){activeMonth=m;loadJournal();}
 
 function calcStats(){
-  const j=JSON.parse(localStorage.tradingJournal||"{}");
-  const t=j[activeMonth]||[];
-  let w=0,l=0,p=0;
-  t.forEach(x=>{if(x.result=="WIN")w++;if(x.result=="LOSS")l++;p+=x.pnl||0});
-  statsBox.innerHTML=`Trades:${t.length}<br>Wins:${w} Losses:${l}<br>Net PnL:$${p.toFixed(2)}`;
+  const j = JSON.parse(localStorage.tradingJournal || "{}");
+  const t = j[activeMonth] || [];
+
+  let wins = 0, losses = 0, pnl = 0;
+
+  t.forEach(x => {
+    if (x.result === "WIN") wins++;
+    if (x.result === "LOSS") losses++;
+    pnl += x.pnl || 0;
+  });
+
+  const closed = wins + losses;
+  const winRate = closed ? ((wins / closed) * 100).toFixed(1) : "0.0";
+
+  statsBox.innerHTML = `
+    Trades: ${t.length}<br>
+    Wins: ${wins} | Losses: ${losses}<br>
+    Win Rate: ${winRate}%<br>
+    Net PnL: $${pnl.toFixed(2)}
+  `;
 }
 </script>
 
