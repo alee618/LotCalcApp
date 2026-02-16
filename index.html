@@ -115,6 +115,11 @@
 <div class="box" id="journalPage" style="display:none;">
   <h2>Trade Journal</h2>
 
+<div style="margin-bottom:10px;">
+  <label>Select Month</label>
+  <select id="monthSelect" onchange="changeMonth(this.value)"></select>
+</div>
+
   <table width="100%" border="1" cellpadding="6" style="border-collapse:collapse; font-size:14px;">
     <thead>
   <tr>
@@ -172,8 +177,10 @@ function showCalculator() {
 function showJournal() {
   document.getElementById("calculatorPage").style.display = "none";
   document.getElementById("journalPage").style.display = "block";
+  loadMonthOptions();
   loadJournal();
 }
+let activeMonth = getCurrentMonthKey();
 
 /* ---------- CORE CALCULATOR ---------- */
 function calculate() {
@@ -242,7 +249,7 @@ function saveTrade(entry, stop, risk, lot) {
 
 function loadJournal() {
   const journal = JSON.parse(localStorage.getItem("tradingJournal") || "{}");
-  const monthKey = getCurrentMonthKey();
+  const monthKey = activeMonth;
   const trades = journal[monthKey] || [];
   const body = document.getElementById("journalBody");
 
@@ -299,6 +306,26 @@ function deleteTrade(index) {
 
   journal[monthKey].splice(index, 1);
   localStorage.setItem("tradingJournal", JSON.stringify(journal));
+  loadJournal();
+}
+function loadMonthOptions() {
+  const journal = JSON.parse(localStorage.getItem("tradingJournal") || "{}");
+  const select = document.getElementById("monthSelect");
+
+  select.innerHTML = "";
+
+  const months = Object.keys(journal).sort().reverse();
+
+  months.forEach(month => {
+    const option = document.createElement("option");
+    option.value = month;
+    option.textContent = month;
+    if (month === activeMonth) option.selected = true;
+    select.appendChild(option);
+  });
+}
+function changeMonth(month) {
+  activeMonth = month;
   loadJournal();
 }
 </script>
