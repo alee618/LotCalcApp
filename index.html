@@ -310,24 +310,30 @@ function loadMonthOptions(){
 
 function changeMonth(m){activeMonth=m;loadJournal();}
 
-function calcStats(){
-  const j = JSON.parse(localStorage.tradingJournal || "{}");
-  const t = j[activeMonth] || [];
+function calcStats() {
+  const journal = JSON.parse(localStorage.tradingJournal || "{}");
+  const trades = journal[activeMonth] || [];
 
-  let wins = 0, losses = 0, pnl = 0;
+  let wins = 0;
+  let losses = 0;
+  let be = 0;
+  let pnl = 0;
 
-  t.forEach(x => {
-    if (x.result === "WIN") wins++;
-    if (x.result === "LOSS") losses++;
-    pnl += x.pnl || 0;
+  trades.forEach(t => {
+    if (t.result === "WIN") wins++;
+    if (t.result === "LOSS") losses++;
+    if (t.result === "BE") be++;
+    pnl += t.pnl || 0;
   });
 
-  const closed = wins + losses;
-  const winRate = closed ? ((wins / closed) * 100).toFixed(1) : "0.0";
+  const closedTrades = wins + losses;
+  const winRate = closedTrades
+    ? ((wins / closedTrades) * 100).toFixed(1)
+    : "0.0";
 
   statsBox.innerHTML = `
-    Trades: ${t.length}<br>
-    Wins: ${wins} | Losses: ${losses}<br>
+    Trades: ${trades.length}<br>
+    Wins: ${wins} | Losses: ${losses} | BE: ${be}<br>
     Win Rate: ${winRate}%<br>
     Net PnL: $${pnl.toFixed(2)}
   `;
