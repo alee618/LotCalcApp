@@ -258,9 +258,17 @@ function loadJournal() {
 </td>
 <td>
 <input class="pnl-input" type="number"
-value="${x.pnl??""}"
-onchange="update(${i},'pnl',this.value);loadJournal()"
-style="color:${Number(x.pnl)>0?'#22c55e':Number(x.pnl)<0?'#ef4444':'#e5e7eb'}">
+value="${x.pnl ?? ""}"
+onchange="update(${i}, 'pnl', this.value); loadJournal();">
+<span>
+  ${
+    x.pnl === null || x.pnl === ""
+      ? ""
+      : x.pnl > 0
+        ? `+${x.pnl}`
+        : `${x.pnl}`
+  }
+</span>
 </td>
 <td>
 <textarea onchange="update(${i},'notes',this.value)">${x.notes}</textarea>
