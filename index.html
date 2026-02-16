@@ -73,7 +73,6 @@ button {
 /* JOURNAL TABLE */
 .table-wrap {
   overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
 }
 
 table {
@@ -89,13 +88,11 @@ td, th {
   vertical-align: top;
 }
 
-/* PnL */
 .pnl-input {
   width: 80px;
   font-weight: bold;
 }
 
-/* Notes */
 textarea {
   min-width: 160px;
   min-height: 60px;
@@ -132,10 +129,10 @@ textarea {
 </select>
 
 <label>Entry Price</label>
-<input type="number" id="entry" step="0.01">
+<input type="number" id="entry">
 
 <label>Stop Loss Price</label>
-<input type="number" id="stop" step="0.01">
+<input type="number" id="stop">
 
 <div class="toggle">
   <span>Use Account Size & Risk %</span>
@@ -184,9 +181,8 @@ textarea {
 let activeMonth = new Date().toISOString().slice(0,7);
 
 function toggleRiskMode() {
-  const p = document.getElementById("riskMode").checked;
-  manualRisk.style.display = p ? "none" : "block";
-  percentRisk.style.display = p ? "block" : "none";
+  manualRisk.style.display = riskMode.checked ? "none" : "block";
+  percentRisk.style.display = riskMode.checked ? "block" : "none";
 }
 
 function showCalculator() {
@@ -203,72 +199,67 @@ function showJournal() {
 
 function calculate() {
   const entry = parseFloat(document.getElementById("entry").value);
-const stop = parseFloat(document.getElementById("stop").value);
-  const vpp = +asset.value;
+  const stop = parseFloat(document.getElementById("stop").value);
+  const vpp = parseFloat(asset.value);
 
-  if (!entry || !stop) return result.innerText="Enter entry & stop";
+  if (isNaN(entry) || isNaN(stop)) {
+    result.innerText = "Enter entry & stop";
+    return;
+  }
 
   const dist = Math.abs(entry - stop);
-  let risk;
-
-  if (riskMode.checked) {
-    risk = accountSize.value * (riskPercent.value/100);
-  } else {
-    risk = +riskAmount.value;
-  }
+  let risk = riskMode.checked
+    ? accountSize.value * (riskPercent.value / 100)
+    : riskAmount.value;
 
   const lot = risk / (dist * vpp);
   result.innerText = "Lot Size: " + lot.toFixed(2);
 
-  saveTrade(entry, stop, risk, lot);
+  saveTrade(risk, lot);
 }
 
-function saveTrade(entry, stop, risk, lot) {
-  const j = JSON.parse(localStorage.tradingJournal||"{}");
-  if (!j[activeMonth]) j[activeMonth]=[];
+function saveTrade(risk, lot) {
+  const j = JSON.parse(localStorage.tradingJournal || "{}");
+  if (!j[activeMonth]) j[activeMonth] = [];
 
   j[activeMonth].push({
-    date:new Date().toISOString().slice(0,10),
-    asset:asset.options[asset.selectedIndex].text,
-    risk, lot, result:"OPEN", pnl:null, notes:""
+    date: new Date().toISOString().slice(0,10),
+    asset: asset.options[asset.selectedIndex].text,
+    risk: Number(risk),
+    lot,
+    result: "OPEN",
+    pnl: null,
+    notes: ""
   });
 
-  localStorage.tradingJournal=JSON.stringify(j);
+  localStorage.tradingJournal = JSON.stringify(j);
 }
 
 function loadJournal() {
-  const j = JSON.parse(localStorage.tradingJournal||"{}");
-  const t = j[activeMonth]||[];
-  journalBody.innerHTML="";
+  const j = JSON.parse(localStorage.tradingJournal || "{}");
+  const t = j[activeMonth] || [];
+  journalBody.innerHTML = "";
 
   t.forEach((x,i)=>{
-    journalBody.innerHTML+=`
+    journalBody.innerHTML += `
 <tr>
 <td>${x.date}</td>
 <td>${x.asset}</td>
 <td>$${x.risk}</td>
 <td>${x.lot.toFixed(2)}</td>
 <td>
-<select onchange="update(${i},'result',this.value)">
-<option ${x.result=="OPEN"?"selected":""}>OPEN</option>
-<option ${x.result=="WIN"?"selected":""}>WIN</option>
-<option ${x.result=="LOSS"?"selected":""}>LOSS</option>
-<option ${x.result=="BE"?"selected":""}>BE</option>
+<select onchange="update(${i},'result',this.value);loadJournal()">
+<option ${x.result==="OPEN"?"selected":""}>OPEN</option>
+<option ${x.result==="WIN"?"selected":""}>WIN</option>
+<option ${x.result==="LOSS"?"selected":""}>LOSS</option>
+<option ${x.result==="BE"?"selected":""}>BE</option>
 </select>
 </td>
 <td>
 <input class="pnl-input" type="number"
-value="${x.pnl ?? ""}"
-onchange="update(${i}, 'pnl', this.value); loadJournal();">
-<span>
-  ${
-    x.pnl === null || x.pnl === ""
-      ? ""
-      : x.pnl > 0
-        ? `+${x.pnl}`
-        : `${x.pnl}`
-  }
-</span>
+value="${x.pnl===null?"":Math.abs(x.pnl)}"
+onchange="update(${i},'pnl',this.value);loadJournal()">
+<span>${x.pnl===null?"":x.pnl>0?`+${x.pnl}`:`${x.pnl}`}</span>
 </td>
 <td>
 <textarea onchange="update(${i},'notes',this.value)">${x.notes}</textarea>
@@ -282,61 +273,72 @@ onchange="update(${i}, 'pnl', this.value); loadJournal();">
 
 function update(i, f, v) {
   const j = JSON.parse(localStorage.tradingJournal || "{}");
+  const trade = j[activeMonth][i];
 
   if (f === "pnl") {
-    j[activeMonth][i].pnl = v === "" ? null : parseFloat(v);
-  } else {
-    j[activeMonth][i][f] = v;
+    if (v === "") trade.pnl = null;
+    else {
+      const abs = Math.abs(Number(v));
+      trade.pnl = trade.result === "LOSS" ? -abs :
+                  trade.result === "WIN" ? abs : 0;
+    }
+  } 
+  else if (f === "result") {
+    trade.result = v;
+    if (trade.pnl !== null) {
+      const abs = Math.abs(trade.pnl);
+      trade.pnl = v === "LOSS" ? -abs :
+                  v === "WIN" ? abs : 0;
+    }
+  } 
+  else {
+    trade[f] = v;
   }
 
   localStorage.tradingJournal = JSON.stringify(j);
 }
 
-function del(i){
-  if(!confirm("Delete trade?"))return;
-  const j=JSON.parse(localStorage.tradingJournal||"{}");
+function del(i) {
+  if (!confirm("Delete trade?")) return;
+  const j = JSON.parse(localStorage.tradingJournal || "{}");
   j[activeMonth].splice(i,1);
-  localStorage.tradingJournal=JSON.stringify(j);
+  localStorage.tradingJournal = JSON.stringify(j);
   loadJournal();
 }
 
-function loadMonthOptions(){
-  const j=JSON.parse(localStorage.tradingJournal||"{}");
-  monthSelect.innerHTML="";
+function loadMonthOptions() {
+  const j = JSON.parse(localStorage.tradingJournal || "{}");
+  monthSelect.innerHTML = "";
   Object.keys(j).sort().reverse().forEach(m=>{
-    monthSelect.innerHTML+=`<option ${m==activeMonth?"selected":""}>${m}</option>`;
+    monthSelect.innerHTML += `<option ${m===activeMonth?"selected":""}>${m}</option>`;
   });
 }
 
-function changeMonth(m){activeMonth=m;loadJournal();}
+function changeMonth(m) {
+  activeMonth = m;
+  loadJournal();
+}
 
 function calcStats() {
-  const journal = JSON.parse(localStorage.tradingJournal || "{}");
-  const trades = journal[activeMonth] || [];
+  const j = JSON.parse(localStorage.tradingJournal || "{}");
+  const t = j[activeMonth] || [];
 
-  let wins = 0;
-  let losses = 0;
-  let be = 0;
-  let pnl = 0;
-
-  trades.forEach(t => {
-    if (t.result === "WIN") wins++;
-    if (t.result === "LOSS") losses++;
-    if (t.result === "BE") be++;
-    pnl += t.pnl || 0;
+  let w=0,l=0,b=0,p=0;
+  t.forEach(x=>{
+    if(x.result==="WIN") w++;
+    if(x.result==="LOSS") l++;
+    if(x.result==="BE") b++;
+    p += x.pnl || 0;
   });
 
-  const closedTrades = wins + losses;
-  const winRate = closedTrades
-    ? ((wins / closedTrades) * 100).toFixed(1)
-    : "0.0";
+  const wr = (w+l) ? ((w/(w+l))*100).toFixed(1) : "0.0";
 
   statsBox.innerHTML = `
-    Trades: ${trades.length}<br>
-    Wins: ${wins} | Losses: ${losses} | BE: ${be}<br>
-    Win Rate: ${winRate}%<br>
-    Net PnL: $${pnl.toFixed(2)}
-  `;
+Trades: ${t.length}<br>
+Wins: ${w} | Losses: ${l} | BE: ${b}<br>
+Win Rate: ${wr}%<br>
+Net PnL: $${p.toFixed(2)}
+`;
 }
 </script>
 
