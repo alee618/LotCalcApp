@@ -132,6 +132,22 @@
   </table>
 </div>
 <script>
+(function migrateOldTrades() {
+  const oldTrades = localStorage.getItem("trades");
+  if (!oldTrades) return;
+
+  const trades = JSON.parse(oldTrades);
+  const journal = JSON.parse(localStorage.getItem("tradingJournal") || "{}");
+
+  trades.forEach(trade => {
+    const month = trade.date.slice(0, 7); // YYYY-MM
+    if (!journal[month]) journal[month] = [];
+    journal[month].push(trade);
+  });
+
+  localStorage.setItem("tradingJournal", JSON.stringify(journal));
+  localStorage.removeItem("trades"); // cleanup
+})();
   function toggleRiskMode() {
     const usePercent = document.getElementById("riskMode").checked;
     document.getElementById("manualRisk").style.display = usePercent ? "none" : "block";
@@ -147,6 +163,10 @@ function showJournal() {
   document.getElementById("journalPage").style.display = "block";
   loadJournal();
 }
+function getCurrentMonthKey() {
+  const now = new Date();
+  return now.toISOString().slice(0, 7); // YYYY-MM
+}
   function calculate() {
     const entry = parseFloat(document.getElementById("entry").value);
     const stop = parseFloat(document.getElementById("stop").value);
@@ -158,11 +178,14 @@ function showJournal() {
       return;
     }
 function saveTrade(entry, stop, risk, lot) {
-  const trades = JSON.parse(localStorage.getItem("trades") || "[]");
+  const journal = JSON.parse(localStorage.getItem("tradingJournal") || "{}");
 
   const now = new Date();
+  const monthKey = getCurrentMonthKey();
 
-  trades.push({
+  if (!journal[monthKey]) journal[monthKey] = [];
+
+  journal[monthKey].push({
     id: Date.now(),
     date: now.toISOString().slice(0, 10),
     time: now.toTimeString().slice(0, 5),
@@ -176,42 +199,15 @@ function saveTrade(entry, stop, risk, lot) {
     notes: ""
   });
 
-  localStorage.setItem("trades", JSON.stringify(trades));
+  localStorage.setItem("tradingJournal", JSON.stringify(journal));
 }
-    const stopDistance = Math.abs(entry - stop);
-    if (stopDistance === 0) {
-      result.innerText = "Stop distance cannot be zero";
-      return;
-    }
 
-    let risk;
-
-    if (usePercent) {
-      const accountSize = parseFloat(document.getElementById("accountSize").value);
-      const riskPercent = parseFloat(document.getElementById("riskPercent").value);
-
-      if (isNaN(accountSize) || isNaN(riskPercent)) {
-        result.innerText = "Enter account size and risk %";
-        return;
-      }
-
-      risk = accountSize * (riskPercent / 100);
-    } else {
-      risk = parseFloat(document.getElementById("riskAmount").value);
-      if (isNaN(risk)) {
-        result.innerText = "Enter risk amount";
-        return;
-      }
-    }
-
-    const lotSize = risk / (stopDistance * valuePerPoint);
-    result.innerText = "Lot Size: " + lotSize.toFixed(2);
-saveTrade(entry, stop, risk, lotSize);
-  }
 function loadJournal() {
-  const trades = JSON.parse(localStorage.getItem("trades") || "[]");
-  const body = document.getElementById("journalBody");
+  const journal = JSON.parse(localStorage.getItem("tradingJournal") || "{}");
+  const monthKey = getCurrentMonthKey();
+  const trades = journal[monthKey] || [];
 
+  const body = document.getElementById("journalBody");
   body.innerHTML = "";
 
   trades.forEach((trade, index) => {
@@ -235,14 +231,12 @@ function loadJournal() {
       <td>
         <input type="number"
                value="${trade.pnl ?? ""}"
-               style="width:80px"
                onchange="updateTrade(${index}, 'pnl', this.value)">
       </td>
 
       <td>
         <input type="text"
                value="${trade.notes}"
-               placeholder="optional"
                onchange="updateTrade(${index}, 'notes', this.value)">
       </td>
 
