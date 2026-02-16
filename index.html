@@ -65,6 +65,41 @@
       font-size: 20px;
       font-weight: bold;
     }
+/* Table layout fix */
+table {
+  width: 100%;
+  table-layout: fixed;
+}
+
+td {
+  vertical-align: top;
+  word-break: break-word;
+}
+
+/* PnL */
+.pnl-input {
+  width: 80px;
+  font-weight: bold;
+}
+
+.pnl-positive {
+  color: #22c55e;
+}
+
+.pnl-negative {
+  color: #ef4444;
+}
+
+/* Notes */
+textarea {
+  width: 100%;
+  min-height: 60px;
+  resize: vertical;
+  padding: 6px;
+  border-radius: 6px;
+  border: none;
+  font-size: 14px;
+}
   </style>
 </head>
 <body>
@@ -274,12 +309,16 @@ function loadJournal() {
           
       </td>
       <td>
-        <input type="number" value="${trade.pnl ?? ""}"
-          onchange="updateTrade(${index}, 'pnl', this.value)">
+        <input type="number"
+  value="${trade.pnl ?? ""}"
+  onchange="updateTrade(${index}, 'pnl', this.value)"
+  class="pnl-input ${trade.pnl > 0 ? 'pnl-positive' : trade.pnl < 0 ? 'pnl-negative' : ''}">
       </td>
       <td>
-        <input type="text" value="${trade.notes}"
-          onchange="updateTrade(${index}, 'notes', this.value)">
+        <textarea
+  placeholder="Notes..."
+  onchange="updateTrade(${index}, 'notes', this.value)"
+>${trade.notes}</textarea>
       </td>
       <td>
         <button onclick="deleteTrade(${index})">❌</button>
