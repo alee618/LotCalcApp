@@ -70,7 +70,7 @@ button {
   text-align: center;
 }
 
-/* JOURNAL TABLE */
+/* Journal table */
 .table-wrap {
   overflow-x: auto;
 }
@@ -180,6 +180,7 @@ textarea {
 <script>
 let activeMonth = new Date().toISOString().slice(0,7);
 
+/* ---------- NAV ---------- */
 function toggleRiskMode() {
   manualRisk.style.display = riskMode.checked ? "none" : "block";
   percentRisk.style.display = riskMode.checked ? "block" : "none";
@@ -197,20 +198,34 @@ function showJournal() {
   loadJournal();
 }
 
+/* ---------- CALCULATOR ---------- */
 function calculate() {
-  const entry = parseFloat(document.getElementById("entry").value);
-  const stop = parseFloat(document.getElementById("stop").value);
-  const vpp = parseFloat(asset.value);
+  const entry = Number(entryInput.value);
+  const stop = Number(stopInput.value);
+  const vpp = Number(asset.value);
 
-  if (isNaN(entry) || isNaN(stop)) {
+  if (!entry || !stop) {
     result.innerText = "Enter entry & stop";
     return;
   }
 
   const dist = Math.abs(entry - stop);
-  let risk = riskMode.checked
-    ? accountSize.value * (riskPercent.value / 100)
-    : riskAmount.value;
+  if (dist === 0) {
+    result.innerText = "Stop distance cannot be zero";
+    return;
+  }
+
+  let risk;
+  if (riskMode.checked) {
+    risk = Number(accountSize.value) * (Number(riskPercent.value) / 100);
+  } else {
+    risk = Number(riskAmount.value);
+  }
+
+  if (!risk || risk <= 0) {
+    result.innerText = "Enter valid risk";
+    return;
+  }
 
   const lot = risk / (dist * vpp);
   result.innerText = "Lot Size: " + lot.toFixed(2);
@@ -218,6 +233,7 @@ function calculate() {
   saveTrade(risk, lot);
 }
 
+/* ---------- STORAGE ---------- */
 function saveTrade(risk, lot) {
   const j = JSON.parse(localStorage.tradingJournal || "{}");
   if (!j[activeMonth]) j[activeMonth] = [];
@@ -225,7 +241,7 @@ function saveTrade(risk, lot) {
   j[activeMonth].push({
     date: new Date().toISOString().slice(0,10),
     asset: asset.options[asset.selectedIndex].text,
-    risk: Number(risk),
+    risk,
     lot,
     result: "OPEN",
     pnl: null,
@@ -235,6 +251,7 @@ function saveTrade(risk, lot) {
   localStorage.tradingJournal = JSON.stringify(j);
 }
 
+/* ---------- JOURNAL ---------- */
 function loadJournal() {
   const j = JSON.parse(localStorage.tradingJournal || "{}");
   const t = j[activeMonth] || [];
@@ -257,9 +274,9 @@ function loadJournal() {
 </td>
 <td>
 <input class="pnl-input" type="number"
-value="${x.pnl===null?"":Math.abs(x.pnl)}"
+value="${x.pnl === null ? "" : Math.abs(x.pnl)}"
 onchange="update(${i},'pnl',this.value);loadJournal()">
-<span>${x.pnl===null?"":x.pnl>0?`+${x.pnl}`:`${x.pnl}`}</span>
+<span>${x.pnl === null ? "" : x.pnl > 0 ? `+${x.pnl}` : `${x.pnl}`}</span>
 </td>
 <td>
 <textarea onchange="update(${i},'notes',this.value)">${x.notes}</textarea>
@@ -280,31 +297,27 @@ function update(i, field, value) {
       trade.pnl = null;
     } else {
       const abs = Math.abs(Number(value));
-
       if (trade.result === "LOSS") trade.pnl = -abs;
       else if (trade.result === "WIN") trade.pnl = abs;
-      else trade.pnl = 0; // BE or OPEN
+      else trade.pnl = 0;
     }
   }
-
   else if (field === "result") {
     trade.result = value;
-
     if (trade.pnl !== null) {
       const abs = Math.abs(trade.pnl);
-
       if (value === "LOSS") trade.pnl = -abs;
       else if (value === "WIN") trade.pnl = abs;
       else trade.pnl = 0;
     }
   }
-
   else {
     trade[field] = value;
   }
 
   localStorage.tradingJournal = JSON.stringify(j);
 }
+
 function del(i) {
   if (!confirm("Delete trade?")) return;
   const j = JSON.parse(localStorage.tradingJournal || "{}");
@@ -313,6 +326,7 @@ function del(i) {
   loadJournal();
 }
 
+/* ---------- MONTHS & STATS ---------- */
 function loadMonthOptions() {
   const j = JSON.parse(localStorage.tradingJournal || "{}");
   monthSelect.innerHTML = "";
@@ -347,6 +361,10 @@ Win Rate: ${wr}%<br>
 Net PnL: $${p.toFixed(2)}
 `;
 }
+
+/* ---------- DOM REFS ---------- */
+const entryInput = document.getElementById("entry");
+const stopInput = document.getElementById("stop");
 </script>
 
 </body>
