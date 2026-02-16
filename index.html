@@ -272,10 +272,16 @@ style="color:${Number(x.pnl)>0?'#22c55e':Number(x.pnl)<0?'#ef4444':'#e5e7eb'}">
   calcStats();
 }
 
-function update(i,f,v){
-  const j=JSON.parse(localStorage.tradingJournal||"{}");
-  j[activeMonth][i][f]=f=="pnl"?Number(v):v;
-  localStorage.tradingJournal=JSON.stringify(j);
+function update(i, f, v) {
+  const j = JSON.parse(localStorage.tradingJournal || "{}");
+
+  if (f === "pnl") {
+    j[activeMonth][i].pnl = v === "" ? null : parseFloat(v);
+  } else {
+    j[activeMonth][i][f] = v;
+  }
+
+  localStorage.tradingJournal = JSON.stringify(j);
 }
 
 function del(i){
