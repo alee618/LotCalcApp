@@ -1,79 +1,92 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lot Size Calculator</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lot Size Calculator</title>
 
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #0f172a;
-      color: #e5e7eb;
-      padding: 20px;
-    }
-    .box {
-      max-width: 420px;
-      margin: auto;
-      background: #020617;
-      padding: 20px;
-      border-radius: 10px;
-    }
-    h2 {
-      text-align: center;
-      margin-bottom: 15px;
-    }
-    label {
-      display: block;
-      margin-top: 10px;
-      font-size: 14px;
-    }
-    input, select {
-      width: 100%;
-      padding: 12px;
-      margin-top: 5px;
-      border-radius: 6px;
-      border: none;
-      font-size: 16px;
-    }
-    .toggle {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 15px;
-      padding: 10px;
-      background: #020617;
-      border: 1px solid #1e293b;
-      border-radius: 8px;
-    }
-    .toggle input {
-      transform: scale(1.2);
-    }
-    button {
-      margin-top: 20px;
-      width: 100%;
-      padding: 12px;
-      font-size: 16px;
-      background: #22c55e;
-      color: #022c22;
-      border: none;
-      border-radius: 8px;
-    }
-    .result {
-      margin-top: 15px;
-      text-align: center;
-      font-size: 20px;
-      font-weight: bold;
-    }
-/* Table layout fix */
-table {
-  width: 100%;
-  table-layout: fixed;
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #0f172a;
+  color: #e5e7eb;
+  padding: 20px;
 }
 
-td {
+.box {
+  max-width: 420px;
+  margin: auto;
+  background: #020617;
+  padding: 20px;
+  border-radius: 10px;
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+label {
+  display: block;
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+input, select {
+  width: 100%;
+  padding: 12px;
+  margin-top: 5px;
+  border-radius: 6px;
+  border: none;
+  font-size: 16px;
+}
+
+.toggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 15px;
+  padding: 10px;
+  background: #020617;
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+}
+
+button {
+  margin-top: 20px;
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  background: #22c55e;
+  color: #022c22;
+  border: none;
+  border-radius: 8px;
+}
+
+.result {
+  margin-top: 15px;
+  font-size: 20px;
+  font-weight: bold;
+  text-align: center;
+}
+
+/* JOURNAL TABLE */
+.table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+table {
+  min-width: 900px;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+td, th {
+  white-space: nowrap;
+  padding: 6px;
+  border: 1px solid #1e293b;
   vertical-align: top;
-  word-break: break-word;
 }
 
 /* PnL */
@@ -82,17 +95,9 @@ td {
   font-weight: bold;
 }
 
-.pnl-positive {
-  color: #22c55e;
-}
-
-.pnl-negative {
-  color: #ef4444;
-}
-
 /* Notes */
 textarea {
-  width: 100%;
+  min-width: 160px;
   min-height: 60px;
   resize: vertical;
   padding: 6px;
@@ -100,324 +105,205 @@ textarea {
   border: none;
   font-size: 14px;
 }
-  </style>
+</style>
 </head>
+
 <body>
+
 <div style="text-align:center; margin-bottom:15px;">
   <button onclick="showCalculator()">Calculator</button>
   <button onclick="showJournal()">Journal</button>
 </div>
+
+<!-- CALCULATOR -->
 <div class="box" id="calculatorPage">
-  <h2>Lot Size Calculator</h2>
+<h2>Lot Size Calculator</h2>
 
-  <label>Asset</label>
-  <select id="asset">
-    <option value="1">NASDAQ (USTECm)</option>
-    <option value="1">S&P 500 (US500m)</option>
-    <option value="1">US30 (US30m)</option>
-    <option value="100">Gold (XAUUSDm)</option>
-    <option value="5000">Silver (XAGUSDm)</option>
-  </select>
+<label>Asset</label>
+<select id="asset">
+  <option value="1">NASDAQ (USTECm)</option>
+  <option value="1">S&P 500 (US500m)</option>
+  <option value="1">US30 (US30m)</option>
+  <option value="100">Gold (XAUUSDm)</option>
+  <option value="5000">Silver (XAGUSDm)</option>
+  <option value="1">BTCUSD</option>
+  <option value="1">ETHUSD</option>
+  <option value="1">SOLUSD</option>
+</select>
 
-  <label>Entry Price</label>
-  <input type="number" id="entry" step="0.01">
+<label>Entry Price</label>
+<input type="number" id="entry" step="0.01">
 
-  <label>Stop Loss Price</label>
-  <input type="number" id="stop" step="0.01">
+<label>Stop Loss Price</label>
+<input type="number" id="stop" step="0.01">
 
-  <div class="toggle">
-    <span>Use Account Size & Risk %</span>
-    <input type="checkbox" id="riskMode" onchange="toggleRiskMode()">
-  </div>
-
-  <div id="manualRisk">
-    <label>Risk Amount ($)</label>
-    <input type="number" id="riskAmount" step="0.01">
-  </div>
-
-  <div id="percentRisk" style="display:none;">
-    <label>Account Balance</label>
-    <input type="number" id="accountSize" step="0.01">
-
-    <label>Risk %</label>
-    <input type="number" id="riskPercent" step="0.01">
-  </div>
-
-  <button onclick="calculate()">Calculate Lot Size</button>
-
-  <div class="result" id="result"></div>
+<div class="toggle">
+  <span>Use Account Size & Risk %</span>
+  <input type="checkbox" id="riskMode" onchange="toggleRiskMode()">
 </div>
+
+<div id="manualRisk">
+  <label>Risk Amount ($)</label>
+  <input type="number" id="riskAmount">
+</div>
+
+<div id="percentRisk" style="display:none;">
+  <label>Account Balance</label>
+  <input type="number" id="accountSize">
+  <label>Risk %</label>
+  <input type="number" id="riskPercent">
+</div>
+
+<button onclick="calculate()">Calculate Lot Size</button>
+<div class="result" id="result"></div>
+</div>
+
+<!-- JOURNAL -->
 <div class="box" id="journalPage" style="display:none;">
-  <h2>Trade Journal</h2>
+<h2>Trade Journal</h2>
 
-<div style="margin-bottom:10px;">
-  <label>Select Month</label>
-  <select id="monthSelect" onchange="changeMonth(this.value)"></select>
-</div>
-<div id="statsBox"
-     style="margin-bottom:15px; padding:10px; border:1px solid #1e293b; border-radius:8px; font-size:14px;">
-</div>
-  <table width="100%" border="1" cellpadding="6" style="border-collapse:collapse; font-size:14px;">
-    <thead>
-  <tr>
-    <th>Date</th>
-    <th>Asset</th>
-    <th>Risk</th>
-    <th>Lot</th>
-    <th>Result</th>
-    <th>PnL ($)</th>
-    <th>Notes</th>
-    <th>❌</th>
-  </tr>
+<label>Select Month</label>
+<select id="monthSelect" onchange="changeMonth(this.value)"></select>
+
+<div id="statsBox" style="margin:10px 0; padding:10px; border:1px solid #1e293b; border-radius:8px;"></div>
+
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>Date</th><th>Asset</th><th>Risk</th><th>Lot</th>
+<th>Result</th><th>PnL ($)</th><th>Notes</th><th>❌</th>
+</tr>
 </thead>
 <tbody id="journalBody"></tbody>
-  </table>
+</table>
+</div>
 </div>
 
-
 <script>
-/* ---------- MIGRATION (SAFE) ---------- */
-(function migrateOldTrades() {
-  const oldTrades = localStorage.getItem("trades");
-  if (!oldTrades) return;
-
-  const trades = JSON.parse(oldTrades);
-  const journal = JSON.parse(localStorage.getItem("tradingJournal") || "{}");
-
-  trades.forEach(trade => {
-    const month = trade.date.slice(0, 7);
-    if (!journal[month]) journal[month] = [];
-    journal[month].push(trade);
-  });
-
-  localStorage.setItem("tradingJournal", JSON.stringify(journal));
-  localStorage.removeItem("trades");
-})();
-
-/* ---------- HELPERS ---------- */
-function getCurrentMonthKey() {
-  const now = new Date();
-  return now.toISOString().slice(0, 7);
-}
+let activeMonth = new Date().toISOString().slice(0,7);
 
 function toggleRiskMode() {
-  const usePercent = document.getElementById("riskMode").checked;
-  document.getElementById("manualRisk").style.display = usePercent ? "none" : "block";
-  document.getElementById("percentRisk").style.display = usePercent ? "block" : "none";
+  const p = document.getElementById("riskMode").checked;
+  manualRisk.style.display = p ? "none" : "block";
+  percentRisk.style.display = p ? "block" : "none";
 }
 
 function showCalculator() {
-  document.getElementById("calculatorPage").style.display = "block";
-  document.getElementById("journalPage").style.display = "none";
+  calculatorPage.style.display = "block";
+  journalPage.style.display = "none";
 }
 
 function showJournal() {
-  document.getElementById("calculatorPage").style.display = "none";
-  document.getElementById("journalPage").style.display = "block";
+  calculatorPage.style.display = "none";
+  journalPage.style.display = "block";
   loadMonthOptions();
   loadJournal();
 }
-let activeMonth = getCurrentMonthKey();
 
-/* ---------- CORE CALCULATOR ---------- */
 function calculate() {
-  const entry = parseFloat(document.getElementById("entry").value);
-  const stop = parseFloat(document.getElementById("stop").value);
-  const valuePerPoint = parseFloat(document.getElementById("asset").value);
-  const usePercent = document.getElementById("riskMode").checked;
+  const entry = +entryInput.value || +entry.value;
+  const stop = +stopInput?.value || +stop.value;
+  const vpp = +asset.value;
 
-  if (isNaN(entry) || isNaN(stop)) {
-    result.innerText = "Enter entry and stop prices";
-    return;
-  }
+  if (!entry || !stop) return result.innerText="Enter entry & stop";
 
-  const stopDistance = Math.abs(entry - stop);
-  if (stopDistance === 0) {
-    result.innerText = "Stop distance cannot be zero";
-    return;
-  }
-
+  const dist = Math.abs(entry - stop);
   let risk;
-  if (usePercent) {
-    const accountSize = parseFloat(document.getElementById("accountSize").value);
-    const riskPercent = parseFloat(document.getElementById("riskPercent").value);
-    if (isNaN(accountSize) || isNaN(riskPercent)) {
-      result.innerText = "Enter account size and risk %";
-      return;
-    }
-    risk = accountSize * (riskPercent / 100);
+
+  if (riskMode.checked) {
+    risk = accountSize.value * (riskPercent.value/100);
   } else {
-    risk = parseFloat(document.getElementById("riskAmount").value);
-    if (isNaN(risk)) {
-      result.innerText = "Enter risk amount";
-      return;
-    }
+    risk = +riskAmount.value;
   }
 
-  const lotSize = risk / (stopDistance * valuePerPoint);
-  result.innerText = "Lot Size: " + lotSize.toFixed(2);
+  const lot = risk / (dist * vpp);
+  result.innerText = "Lot Size: " + lot.toFixed(2);
 
-  saveTrade(entry, stop, risk, lotSize);
+  saveTrade(entry, stop, risk, lot);
 }
 
-/* ---------- JOURNAL STORAGE ---------- */
 function saveTrade(entry, stop, risk, lot) {
-  const journal = JSON.parse(localStorage.getItem("tradingJournal") || "{}");
-  const monthKey = getCurrentMonthKey();
-  if (!journal[monthKey]) journal[monthKey] = [];
+  const j = JSON.parse(localStorage.tradingJournal||"{}");
+  if (!j[activeMonth]) j[activeMonth]=[];
 
-  const now = new Date();
-  journal[monthKey].push({
-    id: Date.now(),
-    date: now.toISOString().slice(0, 10),
-    time: now.toTimeString().slice(0, 5),
-    asset: document.getElementById("asset").selectedOptions[0].text,
-    entry,
-    stop,
-    risk,
-    lot,
-    result: "OPEN",
-    pnl: null,
-    notes: ""
+  j[activeMonth].push({
+    date:new Date().toISOString().slice(0,10),
+    asset:asset.options[asset.selectedIndex].text,
+    risk, lot, result:"OPEN", pnl:null, notes:""
   });
 
-  localStorage.setItem("tradingJournal", JSON.stringify(journal));
+  localStorage.tradingJournal=JSON.stringify(j);
 }
 
 function loadJournal() {
-  const journal = JSON.parse(localStorage.getItem("tradingJournal") || "{}");
-  const monthKey = activeMonth;
-  const trades = journal[monthKey] || [];
-  const body = document.getElementById("journalBody");
+  const j = JSON.parse(localStorage.tradingJournal||"{}");
+  const t = j[activeMonth]||[];
+  journalBody.innerHTML="";
 
-  body.innerHTML = "";
-
-  trades.forEach((trade, index) => {
-    const row = document.createElement("tr");
-    row.innerHTML = `
-      <td>${trade.date}</td>
-      <td>${trade.asset}</td>
-      <td>$${trade.risk}</td>
-      <td>${trade.lot.toFixed(2)}</td>
-      <td>
-        <select onchange="updateTrade(${index}, 'result', this.value)">
-  <option value="OPEN" ${trade.result === "OPEN" ? "selected" : ""}>⏳ OPEN</option>
-  <option value="WIN" ${trade.result === "WIN" ? "selected" : ""}>🥂 WIN</option>
-  <option value="LOSS" ${trade.result === "LOSS" ? "selected" : ""}>🥀 LOSS</option>
-  <option value="BE" ${trade.result === "BE" ? "selected" : ""}>🙎🏻 BE</option>
+  t.forEach((x,i)=>{
+    journalBody.innerHTML+=`
+<tr>
+<td>${x.date}</td>
+<td>${x.asset}</td>
+<td>$${x.risk}</td>
+<td>${x.lot.toFixed(2)}</td>
+<td>
+<select onchange="update(${i},'result',this.value)">
+<option ${x.result=="OPEN"?"selected":""}>OPEN</option>
+<option ${x.result=="WIN"?"selected":""}>WIN</option>
+<option ${x.result=="LOSS"?"selected":""}>LOSS</option>
+<option ${x.result=="BE"?"selected":""}>BE</option>
 </select>
-          
-      </td>
-      <td>
-       <input type="number"
-  value="${trade.pnl ?? ""}"
-  onchange="updateTrade(${index}, 'pnl', this.value); loadJournal();"
-  style="
-    width:80px;
-    font-weight:bold;
-    color:${trade.pnl > 0 ? '#22c55e' : trade.pnl < 0 ? '#ef4444' : '#e5e7eb'};
-  ">
-      </td>
-      <td>
-        <textarea
-  placeholder="Notes..."
-  onchange="updateTrade(${index}, 'notes', this.value)"
->${trade.notes}</textarea>
-      </td>
-      <td>
-        <button onclick="deleteTrade(${index})">❌</button>
-      </td>
-    `;
-    body.appendChild(row);
+</td>
+<td>
+<input class="pnl-input" type="number"
+value="${x.pnl??""}"
+onchange="update(${i},'pnl',this.value);loadJournal()"
+style="color:${Number(x.pnl)>0?'#22c55e':Number(x.pnl)<0?'#ef4444':'#e5e7eb'}">
+</td>
+<td>
+<textarea onchange="update(${i},'notes',this.value)">${x.notes}</textarea>
+</td>
+<td><button onclick="del(${i})">❌</button></td>
+</tr>`;
   });
-calculateMonthlyStats();
+
+  calcStats();
 }
 
-function updateTrade(index, field, value) {
-  const journal = JSON.parse(localStorage.getItem("tradingJournal") || "{}");
-  const monthKey = getCurrentMonthKey();
-  if (!journal[monthKey]) return;
-
-  journal[monthKey][index][field] =
-    field === "pnl" && value !== "" ? parseFloat(value) : value;
-
-  localStorage.setItem("tradingJournal", JSON.stringify(journal));
+function update(i,f,v){
+  const j=JSON.parse(localStorage.tradingJournal||"{}");
+  j[activeMonth][i][f]=f=="pnl"?Number(v):v;
+  localStorage.tradingJournal=JSON.stringify(j);
 }
 
-function deleteTrade(index) {
-  if (!confirm("Delete this trade?")) return;
-
-  const journal = JSON.parse(localStorage.getItem("tradingJournal") || "{}");
-  const monthKey = getCurrentMonthKey();
-  if (!journal[monthKey]) return;
-
-  journal[monthKey].splice(index, 1);
-  localStorage.setItem("tradingJournal", JSON.stringify(journal));
+function del(i){
+  if(!confirm("Delete trade?"))return;
+  const j=JSON.parse(localStorage.tradingJournal||"{}");
+  j[activeMonth].splice(i,1);
+  localStorage.tradingJournal=JSON.stringify(j);
   loadJournal();
 }
-function loadMonthOptions() {
-  const journal = JSON.parse(localStorage.getItem("tradingJournal") || "{}");
-  const select = document.getElementById("monthSelect");
 
-  select.innerHTML = "";
-
-  const months = Object.keys(journal).sort().reverse();
-
-  months.forEach(month => {
-    const option = document.createElement("option");
-    option.value = month;
-    option.textContent = month;
-    if (month === activeMonth) option.selected = true;
-    select.appendChild(option);
+function loadMonthOptions(){
+  const j=JSON.parse(localStorage.tradingJournal||"{}");
+  monthSelect.innerHTML="";
+  Object.keys(j).sort().reverse().forEach(m=>{
+    monthSelect.innerHTML+=`<option ${m==activeMonth?"selected":""}>${m}</option>`;
   });
 }
-function changeMonth(month) {
-  activeMonth = month;
-  loadJournal();
-}
-function calculateMonthlyStats() {
-  const journal = JSON.parse(localStorage.getItem("tradingJournal") || "{}");
-  const trades = journal[activeMonth] || [];
 
-  let wins = 0, losses = 0, be = 0;
-  let totalPnL = 0;
-  let winPnL = [], lossPnL = [];
+function changeMonth(m){activeMonth=m;loadJournal();}
 
-  trades.forEach(t => {
-    if (t.result === "WIN") {
-      wins++;
-      totalPnL += t.pnl || 0;
-      winPnL.push(t.pnl || 0);
-    }
-    if (t.result === "LOSS") {
-      losses++;
-      totalPnL += t.pnl || 0;
-      lossPnL.push(t.pnl || 0);
-    }
-    if (t.result === "BE") be++;
-  });
-
-  const closedTrades = wins + losses;
-  const winRate = closedTrades ? ((wins / closedTrades) * 100).toFixed(1) : "0.0";
-
-  const avgWin = winPnL.length
-    ? (winPnL.reduce((a, b) => a + b, 0) / winPnL.length).toFixed(2)
-    : 0;
-
-  const avgLoss = lossPnL.length
-    ? (lossPnL.reduce((a, b) => a + b, 0) / lossPnL.length).toFixed(2)
-    : 0;
-
-  document.getElementById("statsBox").innerHTML = `
-    <strong>${activeMonth}</strong><br>
-    Trades: ${trades.length}<br>
-    Wins: ${wins} | Losses: ${losses} | BE: ${be}<br>
-    Win Rate: ${winRate}%<br>
-    Net PnL: $${totalPnL.toFixed(2)}<br>
-    Avg Win: $${avgWin}<br>
-    Avg Loss: $${avgLoss}
-  `;
+function calcStats(){
+  const j=JSON.parse(localStorage.tradingJournal||"{}");
+  const t=j[activeMonth]||[];
+  let w=0,l=0,p=0;
+  t.forEach(x=>{if(x.result=="WIN")w++;if(x.result=="LOSS")l++;p+=x.pnl||0});
+  statsBox.innerHTML=`Trades:${t.length}<br>Wins:${w} Losses:${l}<br>Net PnL:$${p.toFixed(2)}`;
 }
 </script>
+
 </body>
 </html>
