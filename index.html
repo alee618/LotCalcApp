@@ -271,33 +271,40 @@ onchange="update(${i},'pnl',this.value);loadJournal()">
   calcStats();
 }
 
-function update(i, f, v) {
+function update(i, field, value) {
   const j = JSON.parse(localStorage.tradingJournal || "{}");
   const trade = j[activeMonth][i];
 
-  if (f === "pnl") {
-    if (v === "") trade.pnl = null;
-    else {
-      const abs = Math.abs(Number(v));
-      trade.pnl = trade.result === "LOSS" ? -abs :
-                  trade.result === "WIN" ? abs : 0;
+  if (field === "pnl") {
+    if (value === "") {
+      trade.pnl = null;
+    } else {
+      const abs = Math.abs(Number(value));
+
+      if (trade.result === "LOSS") trade.pnl = -abs;
+      else if (trade.result === "WIN") trade.pnl = abs;
+      else trade.pnl = 0; // BE or OPEN
     }
-  } 
-  else if (f === "result") {
-    trade.result = v;
+  }
+
+  else if (field === "result") {
+    trade.result = value;
+
     if (trade.pnl !== null) {
       const abs = Math.abs(trade.pnl);
-      trade.pnl = v === "LOSS" ? -abs :
-                  v === "WIN" ? abs : 0;
+
+      if (value === "LOSS") trade.pnl = -abs;
+      else if (value === "WIN") trade.pnl = abs;
+      else trade.pnl = 0;
     }
-  } 
+  }
+
   else {
-    trade[f] = v;
+    trade[field] = value;
   }
 
   localStorage.tradingJournal = JSON.stringify(j);
 }
-
 function del(i) {
   if (!confirm("Delete trade?")) return;
   const j = JSON.parse(localStorage.tradingJournal || "{}");
