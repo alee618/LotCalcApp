@@ -117,15 +117,18 @@
 
   <table width="100%" border="1" cellpadding="6" style="border-collapse:collapse; font-size:14px;">
     <thead>
-      <tr>
-        <th>Date</th>
-        <th>Asset</th>
-        <th>Risk</th>
-        <th>Lot</th>
-        <th>Status</th>
-      </tr>
-    </thead>
-    <tbody id="journalBody"></tbody>
+  <tr>
+    <th>Date</th>
+    <th>Asset</th>
+    <th>Risk</th>
+    <th>Lot</th>
+    <th>Result</th>
+    <th>PnL ($)</th>
+    <th>Notes</th>
+    <th>❌</th>
+  </tr>
+</thead>
+<tbody id="journalBody"></tbody>
   </table>
 </div>
 <script>
@@ -211,7 +214,7 @@ function loadJournal() {
 
   body.innerHTML = "";
 
-  trades.forEach(trade => {
+  trades.forEach((trade, index) => {
     const row = document.createElement("tr");
 
     row.innerHTML = `
@@ -219,11 +222,55 @@ function loadJournal() {
       <td>${trade.asset}</td>
       <td>$${trade.risk}</td>
       <td>${trade.lot.toFixed(2)}</td>
-      <td>${trade.result}</td>
+
+      <td>
+        <select onchange="updateTrade(${index}, 'result', this.value)">
+          <option value="OPEN" ${trade.result === "OPEN" ? "selected" : ""}>OPEN</option>
+          <option value="WIN" ${trade.result === "WIN" ? "selected" : ""}>WIN</option>
+          <option value="LOSS" ${trade.result === "LOSS" ? "selected" : ""}>LOSS</option>
+          <option value="BE" ${trade.result === "BE" ? "selected" : ""}>BE</option>
+        </select>
+      </td>
+
+      <td>
+        <input type="number"
+               value="${trade.pnl ?? ""}"
+               style="width:80px"
+               onchange="updateTrade(${index}, 'pnl', this.value)">
+      </td>
+
+      <td>
+        <input type="text"
+               value="${trade.notes}"
+               placeholder="optional"
+               onchange="updateTrade(${index}, 'notes', this.value)">
+      </td>
+
+      <td>
+        <button onclick="deleteTrade(${index})">❌</button>
+      </td>
     `;
 
     body.appendChild(row);
   });
+}
+function updateTrade(index, field, value) {
+  const trades = JSON.parse(localStorage.getItem("trades") || "[]");
+
+  if (field === "pnl") {
+    value = value === "" ? null : parseFloat(value);
+  }
+
+  trades[index][field] = value;
+  localStorage.setItem("trades", JSON.stringify(trades));
+}
+function deleteTrade(index) {
+  if (!confirm("Delete this trade?")) return;
+
+  const trades = JSON.parse(localStorage.getItem("trades") || "[]");
+  trades.splice(index, 1);
+  localStorage.setItem("trades", JSON.stringify(trades));
+  loadJournal();
 }
 </script>
 
