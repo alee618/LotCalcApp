@@ -119,7 +119,9 @@
   <label>Select Month</label>
   <select id="monthSelect" onchange="changeMonth(this.value)"></select>
 </div>
-
+<div id="statsBox"
+     style="margin-bottom:15px; padding:10px; border:1px solid #1e293b; border-radius:8px; font-size:14px;">
+</div>
   <table width="100%" border="1" cellpadding="6" style="border-collapse:collapse; font-size:14px;">
     <thead>
   <tr>
@@ -284,6 +286,7 @@ function loadJournal() {
     `;
     body.appendChild(row);
   });
+calculateMonthlyStats();
 }
 
 function updateTrade(index, field, value) {
@@ -327,6 +330,49 @@ function loadMonthOptions() {
 function changeMonth(month) {
   activeMonth = month;
   loadJournal();
+}
+function calculateMonthlyStats() {
+  const journal = JSON.parse(localStorage.getItem("tradingJournal") || "{}");
+  const trades = journal[activeMonth] || [];
+
+  let wins = 0, losses = 0, be = 0;
+  let totalPnL = 0;
+  let winPnL = [], lossPnL = [];
+
+  trades.forEach(t => {
+    if (t.result === "WIN") {
+      wins++;
+      totalPnL += t.pnl || 0;
+      winPnL.push(t.pnl || 0);
+    }
+    if (t.result === "LOSS") {
+      losses++;
+      totalPnL += t.pnl || 0;
+      lossPnL.push(t.pnl || 0);
+    }
+    if (t.result === "BE") be++;
+  });
+
+  const closedTrades = wins + losses;
+  const winRate = closedTrades ? ((wins / closedTrades) * 100).toFixed(1) : "0.0";
+
+  const avgWin = winPnL.length
+    ? (winPnL.reduce((a, b) => a + b, 0) / winPnL.length).toFixed(2)
+    : 0;
+
+  const avgLoss = lossPnL.length
+    ? (lossPnL.reduce((a, b) => a + b, 0) / lossPnL.length).toFixed(2)
+    : 0;
+
+  document.getElementById("statsBox").innerHTML = `
+    <strong>${activeMonth}</strong><br>
+    Trades: ${trades.length}<br>
+    Wins: ${wins} | Losses: ${losses} | BE: ${be}<br>
+    Win Rate: ${winRate}%<br>
+    Net PnL: $${totalPnL.toFixed(2)}<br>
+    Avg Win: $${avgWin}<br>
+    Avg Loss: $${avgLoss}
+  `;
 }
 </script>
 </body>
