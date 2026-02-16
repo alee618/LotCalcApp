@@ -249,21 +249,28 @@ function loadJournal() {
   });
 }
 function updateTrade(index, field, value) {
-  const trades = JSON.parse(localStorage.getItem("trades") || "[]");
+  const journal = JSON.parse(localStorage.getItem("tradingJournal") || "{}");
+  const monthKey = getCurrentMonthKey();
+
+  if (!journal[monthKey]) return;
 
   if (field === "pnl") {
     value = value === "" ? null : parseFloat(value);
   }
 
-  trades[index][field] = value;
-  localStorage.setItem("trades", JSON.stringify(trades));
+  journal[monthKey][index][field] = value;
+  localStorage.setItem("tradingJournal", JSON.stringify(journal));
 }
 function deleteTrade(index) {
   if (!confirm("Delete this trade?")) return;
 
-  const trades = JSON.parse(localStorage.getItem("trades") || "[]");
-  trades.splice(index, 1);
-  localStorage.setItem("trades", JSON.stringify(trades));
+  const journal = JSON.parse(localStorage.getItem("tradingJournal") || "{}");
+  const monthKey = getCurrentMonthKey();
+
+  if (!journal[monthKey]) return;
+
+  journal[monthKey].splice(index, 1);
+  localStorage.setItem("tradingJournal", JSON.stringify(journal));
   loadJournal();
 }
 </script>
